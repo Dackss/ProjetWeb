@@ -1,0 +1,14 @@
+# Node / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs and databases
+*.log
+.vscode/
+.idea/
+.DS_Store
+
+# PHP / Environnement
+.env
