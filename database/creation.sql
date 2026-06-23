@@ -31,6 +31,16 @@ CREATE TABLE AccessibilitePMR (
 
 
 -- ----------------------------
+-- Table: TypeTarif
+-- ----------------------------
+CREATE TABLE TypeTarif (
+    id_type_tarif INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    libelle VARCHAR(100) NOT NULL,
+    CONSTRAINT TypeTarif_PK PRIMARY KEY (id_type_tarif)
+);
+
+
+-- ----------------------------
 -- Table: Operateur
 -- ----------------------------
 CREATE TABLE Operateur (
@@ -105,15 +115,15 @@ CREATE TABLE Station (
 -- ----------------------------
 CREATE TABLE Tarification (
     id_tarification INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    type_tarif ENUM('inconnu','composite','kwh','forfait','gratuit','temps') NOT NULL DEFAULT 'inconnu',
     prix_kwh_norm DECIMAL(6,3),
     prix_min_norm DECIMAL(6,3),
     gratuit TINYINT(1),
     paiement_acte TINYINT(1) NOT NULL DEFAULT False,
     paiement_cb TINYINT(1) NOT NULL DEFAULT False,
     paiement_autre TINYINT(1) NOT NULL DEFAULT False,
-    id_pdc VARCHAR(50) NOT NULL,
-    CONSTRAINT Tarification_PK PRIMARY KEY (id_tarification)
+    id_type_tarif INT UNSIGNED NOT NULL,
+    CONSTRAINT Tarification_PK PRIMARY KEY (id_tarification),
+    CONSTRAINT Tarification_id_type_tarif_FK FOREIGN KEY (id_type_tarif) REFERENCES TypeTarif (id_type_tarif)
 );
 
 
@@ -141,17 +151,15 @@ CREATE TABLE PointDeCharge (
     id_station VARCHAR(50) NOT NULL,
     id_raccordement INT UNSIGNED,
     id_pmr INT UNSIGNED,
+    id_tarification INT UNSIGNED,
     CONSTRAINT PointDeCharge_PK PRIMARY KEY (id_pdc),
     CONSTRAINT PointDeCharge_id_station_FK FOREIGN KEY (id_station) REFERENCES Station (id_station),
-    CONSTRAINT PointDeCharge_id_raccordement_FK FOREIGN KEY (id_raccordement) REFERENCES Raccordement (id_raccordement)
+    CONSTRAINT PointDeCharge_id_raccordement_FK FOREIGN KEY (id_raccordement) REFERENCES Raccordement (id_raccordement),
+    CONSTRAINT PointDeCharge_id_tarification_FK FOREIGN KEY (id_tarification) REFERENCES Tarification (id_tarification)
 );
 
 
 -- ===== FOREIGN KEYS =====
-
-ALTER TABLE Tarification
-    ADD CONSTRAINT Tarification_id_pdc_FK FOREIGN KEY (id_pdc)
-        REFERENCES PointDeCharge (id_pdc);
 
 ALTER TABLE possede
     ADD CONSTRAINT possede_id_pdc_FK FOREIGN KEY (id_pdc)
@@ -168,6 +176,8 @@ CREATE UNIQUE INDEX id_implantation_UNQ ON Implantation (id_implantation);
 CREATE UNIQUE INDEX libelle_UNQ ON Implantation (libelle);
 CREATE UNIQUE INDEX id_pmr_UNQ ON AccessibilitePMR (id_pmr);
 CREATE UNIQUE INDEX libelle_UNQ ON AccessibilitePMR (libelle);
+CREATE UNIQUE INDEX id_type_tarif_UNQ ON TypeTarif (id_type_tarif);
+CREATE UNIQUE INDEX libelle_UNQ ON TypeTarif (libelle);
 CREATE UNIQUE INDEX id_operateur_UNQ ON Operateur (id_operateur);
 
 CREATE UNIQUE INDEX code_operateur_complet_UNQ ON Operateur (code_pays_operateur, code_operateur);
@@ -183,7 +193,7 @@ CREATE INDEX id_operateur_IDX ON Station (id_operateur);
 CREATE INDEX code_insee_IDX ON Station (code_insee);
 CREATE INDEX id_implantation_IDX ON Station (id_implantation);
 CREATE UNIQUE INDEX id_tarification_UNQ ON Tarification (id_tarification);
-CREATE UNIQUE INDEX id_pdc_UNQ ON Tarification (id_pdc);
+CREATE INDEX id_type_tarif_IDX ON Tarification (id_type_tarif);
 
 CREATE INDEX id_type_prise_IDX ON possede (id_type_prise);
 CREATE INDEX id_pdc_IDX ON possede (id_pdc);
@@ -192,3 +202,4 @@ CREATE UNIQUE INDEX id_pdc_UNQ ON PointDeCharge (id_pdc);
 CREATE INDEX id_station_IDX ON PointDeCharge (id_station);
 CREATE INDEX id_raccordement_IDX ON PointDeCharge (id_raccordement);
 CREATE INDEX id_pmr_IDX ON PointDeCharge (id_pmr);
+CREATE UNIQUE INDEX id_tarification_UNQ ON PointDeCharge (id_tarification);
