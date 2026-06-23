@@ -23,14 +23,37 @@ npm run dev
 ```
 Réponds sur http://localhost:5174
 
-### Backend
+### Backend + base de données (Docker)
+
+**Prérequis** : Docker + Docker Compose installés et lancés.
 
 ```bash
-cp backend/config/.env.example backend/config/.env
-# éditer backend/config/.env avec les identifiants MariaDB
-php -S localhost:8000 -t backend/
+cp .env.example .env
+# éditer .env si besoin (identifiants DB)
+docker compose up -d --build
 ```
-Réponds sur http://localhost:8000
+
+Commandes utiles :
+
+```bash
+docker compose ps               # statut des conteneurs
+docker compose logs -f apache   # logs backend en direct
+docker compose logs -f db       # logs DB en direct
+docker compose down             # arrêter (garde les données)
+docker compose down -v          # arrêter + supprimer les données
+```
+
+- API dispo sur `http://localhost:8000`
+- MariaDB dispo sur `localhost:3306`
+- `database/*.sql` est importé automatiquement au premier démarrage du conteneur `db`
+- `docker compose down` pour arrêter, `docker compose down -v` pour repartir de zéro (supprime les données)
+
+### Voir les tables MariaDB dans WebStorm
+
+1. Database tool window → `+` → Data Source → **MariaDB**
+2. Host `localhost`, Port `3306`, User/Password/Database = valeurs du `.env`
+3. Télécharger le driver si demandé, puis **Test Connection**
+4. Les tables apparaissent dans l'arbre Database
 
 Le frontend (port Vite, ex: 5173) appelle le backend PHP (port 8000) en JSON
 via `axios`. Le backend appelle les scripts Python via `exec()`/`shell_exec()`
