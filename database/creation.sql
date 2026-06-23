@@ -75,12 +75,34 @@ CREATE TABLE Raccordement (
 
 
 -- ----------------------------
+-- Table: Departement
+-- ----------------------------
+CREATE TABLE Departement (
+    code_departement VARCHAR(3) NOT NULL,
+    nom_departement VARCHAR(100) NOT NULL,
+    CONSTRAINT Departement_PK PRIMARY KEY (code_departement)
+);
+
+
+-- ----------------------------
 -- Table: Commune
 -- ----------------------------
 CREATE TABLE Commune (
     code_insee CHAR(5) NOT NULL,
     nom_commune VARCHAR(100) NOT NULL,
-    CONSTRAINT Commune_PK PRIMARY KEY (code_insee)
+    code_departement VARCHAR(3) NOT NULL,
+    CONSTRAINT Commune_PK PRIMARY KEY (code_insee),
+    CONSTRAINT Commune_code_departement_FK FOREIGN KEY (code_departement) REFERENCES Departement (code_departement)
+);
+
+
+-- ----------------------------
+-- Table: ConditionAcces
+-- ----------------------------
+CREATE TABLE ConditionAcces (
+    id_condition_acces INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    libelle VARCHAR(50) NOT NULL,
+    CONSTRAINT ConditionAcces_PK PRIMARY KEY (id_condition_acces)
 );
 
 
@@ -93,7 +115,7 @@ CREATE TABLE Station (
     adresse VARCHAR(150) NOT NULL,
     longitude DECIMAL(9,6) NOT NULL,
     latitude DECIMAL(9,6) NOT NULL,
-    condition_acces ENUM('Accès libre','Accès réservé') NOT NULL,
+    id_condition_acces INT UNSIGNED NOT NULL,
     horaires VARCHAR(255),
     reservation TINYINT(1) NOT NULL DEFAULT False,
     date_service DATE,
@@ -106,7 +128,8 @@ CREATE TABLE Station (
     CONSTRAINT Station_id_amenageur_FK FOREIGN KEY (id_amenageur) REFERENCES Amenageur (id_amenageur),
     CONSTRAINT Station_id_operateur_FK FOREIGN KEY (id_operateur) REFERENCES Operateur (id_operateur),
     CONSTRAINT Station_code_insee_FK FOREIGN KEY (code_insee) REFERENCES Commune (code_insee),
-    CONSTRAINT Station_id_implantation_FK FOREIGN KEY (id_implantation) REFERENCES Implantation (id_implantation)
+    CONSTRAINT Station_id_implantation_FK FOREIGN KEY (id_implantation) REFERENCES Implantation (id_implantation),
+    CONSTRAINT Station_id_condition_acces_FK FOREIGN KEY (id_condition_acces) REFERENCES ConditionAcces (id_condition_acces)
 );
 
 
@@ -186,12 +209,17 @@ CREATE UNIQUE INDEX libelle_UNQ ON TypePrise (libelle);
 CREATE UNIQUE INDEX id_raccordement_UNQ ON Raccordement (id_raccordement);
 CREATE UNIQUE INDEX libelle_UNQ ON Raccordement (libelle);
 CREATE UNIQUE INDEX code_insee_UNQ ON Commune (code_insee);
+CREATE INDEX code_departement_IDX ON Commune (code_departement);
+CREATE UNIQUE INDEX code_departement_UNQ ON Departement (code_departement);
+CREATE UNIQUE INDEX id_condition_acces_UNQ ON ConditionAcces (id_condition_acces);
+CREATE UNIQUE INDEX libelle_UNQ ON ConditionAcces (libelle);
 CREATE UNIQUE INDEX id_station_UNQ ON Station (id_station);
 
 CREATE INDEX id_amenageur_IDX ON Station (id_amenageur);
 CREATE INDEX id_operateur_IDX ON Station (id_operateur);
 CREATE INDEX code_insee_IDX ON Station (code_insee);
 CREATE INDEX id_implantation_IDX ON Station (id_implantation);
+CREATE INDEX id_condition_acces_IDX ON Station (id_condition_acces);
 CREATE UNIQUE INDEX id_tarification_UNQ ON Tarification (id_tarification);
 CREATE INDEX id_type_tarif_IDX ON Tarification (id_type_tarif);
 

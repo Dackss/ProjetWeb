@@ -44,14 +44,14 @@ docker compose down -v          # arrêter + supprimer les données
 ```
 
 - API dispo sur `http://localhost:8000`
-- MariaDB dispo sur `localhost:3306`
+- MariaDB dispo sur `localhost:3307`
 - `database/*.sql` est importé automatiquement au premier démarrage du conteneur `db`
 - `docker compose down` pour arrêter, `docker compose down -v` pour repartir de zéro (supprime les données)
 
 ### Voir les tables MariaDB dans WebStorm
 
 1. Database tool window → `+` → Data Source → **MariaDB**
-2. Host `localhost`, Port `3306`, User/Password/Database = valeurs du `.env`
+2. Host `localhost`, Port `3307`, User/Password/Database = valeurs du `.env`
 3. Télécharger le driver si demandé, puis **Test Connection**
 4. Les tables apparaissent dans l'arbre Database
 
