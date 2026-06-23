@@ -1,6 +1,6 @@
 # Node / React
 node_modules/
-dist/
+frontend/dist/
 dist-ssr/
 *.local
 
@@ -11,4 +11,10 @@ dist-ssr/
 .DS_Store
 
 # PHP / Environnement
-.env
+**/.env
+backend/vendor/
+
+# Python / IA
+ia/venv/
+__pycache__/
+*.pyc
