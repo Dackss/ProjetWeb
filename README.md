@@ -21,6 +21,7 @@ cd frontend
 npm install
 npm run dev
 ```
+Réponds sur http://localhost:5174
 
 ### Backend
 
@@ -29,15 +30,7 @@ cp backend/config/.env.example backend/config/.env
 # éditer backend/config/.env avec les identifiants MariaDB
 php -S localhost:8000 -t backend/
 ```
-
-### IA (Python)
-
-```bash
-cd ia
-python3 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+Réponds sur http://localhost:8000
 
 Le frontend (port Vite, ex: 5173) appelle le backend PHP (port 8000) en JSON
 via `axios`. Le backend appelle les scripts Python via `exec()`/`shell_exec()`
