@@ -6,6 +6,18 @@ import joblib
 import numpy as np
 import pandas as pd
 
+"""
+Contrat JSON (sys.argv[1]):
+  Requis : puissance (float), nb_pdc (int), latitude (float), longitude (float)
+  Optionnels (bool, défaut false) : gratuit, deux_roues, prise_ccs, prise_type2,
+    prise_chademo, prise_ef, paiement_acte, paiement_cb, paiement_autre
+  Optionnel : type_tarif (str, défaut "inconnu", un de
+    composite/gratuit/inconnu/kwh/temps)
+  Sortie : {"implantation": <str>}, un de Voirie / Parking public /
+    Parking privé à usage public / Parking privé réservé à la clientèle /
+    Station dédiée à la recharge rapide
+"""
+
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 
 BOOL_MAPPING = {'TRUE': 1, 'FALSE': 0, '1': 1, '0': 0, 'OUI': 1, 'NON': 0}

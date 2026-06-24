@@ -4,6 +4,12 @@ import json
 
 import joblib
 
+"""
+Contrat JSON (sys.argv[1]):
+  Requis : latitude (float), longitude (float)
+  Sortie : {"cluster": <int>}
+"""
+
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 
 

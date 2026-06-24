@@ -25,7 +25,7 @@ Réponds sur http://localhost:5174
 
 ### Backend + base de données (Docker)
 
-**Prérequis** : Docker + Docker Compose installés et lancés.
+**Prérequis** : Docker + Docker Compose installés et lancés, [Git LFS](https://git-lfs.com/) installé (`git lfs install`) pour récupérer les modèles IA (`ia/models/*.pkl`, certains > 100 Mo).
 
 ```bash
 cp .env.example .env

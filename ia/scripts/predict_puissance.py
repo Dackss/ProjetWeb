@@ -5,6 +5,17 @@ import json
 import joblib
 import pandas as pd
 
+"""
+Contrat JSON (sys.argv[1]):
+  Requis : nb_pdc (int)
+  Optionnels : implantation (str, défaut ""), prise_ccs/prise_chademo/prise_type2/
+    prise_ef/reservation (bool, défaut false), condition_acces (str, défaut ""),
+    type_tarif (str, défaut "inconnu", un de composite/gratuit/inconnu/kwh/temps),
+    raccordement (str, défaut "inconnu"), operateur (str, défaut "")
+  Sortie : {"puissance": <str>}, un de Lente (<= 7.4 kW) / Normale (7.4 - 22 kW) /
+    Acceleree (22 - 50 kW) / Rapide (50 - 150 kW) / Ultra-rapide (> 150 kW)
+"""
+
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 
 
@@ -24,11 +35,11 @@ def predire_puissance(payload):
     enc_operateur = joblib.load(os.path.join(MODELS_DIR, 'encodage_operateur_b4.pkl'))
     features = joblib.load(os.path.join(MODELS_DIR, 'features_b4.pkl'))
 
-    impl_df = pd.DataFrame([[str(payload.get('implantation', ''))]], columns=['implantation'])
+    impl_df = pd.DataFrame([[str(payload.get('implantation', '')).strip()]], columns=['implantation'])
     impl_encoded = ohe_implantation.transform(impl_df)
     impl_cols = [f'implantation_{c}' for c in ohe_implantation.categories_[0]]
 
-    acces_df = pd.DataFrame([[str(payload.get('condition_acces', ''))]], columns=['condition_acces'])
+    acces_df = pd.DataFrame([[str(payload.get('condition_acces', '')).strip()]], columns=['condition_acces'])
     acces_encoded = ohe_acces.transform(acces_df)
     acces_cols = [f'acces_{c}' for c in ohe_acces.categories_[0]]
 
@@ -36,7 +47,7 @@ def predire_puissance(payload):
     tarif_encoded = ohe_tarif.transform(tarif_df)
     tarif_cols = [f'tarif_{c}' for c in ohe_tarif.categories_[0]]
 
-    raccordement_df = pd.DataFrame([[str(payload.get('raccordement', 'inconnu'))]], columns=['raccordement'])
+    raccordement_df = pd.DataFrame([[str(payload.get('raccordement', 'inconnu')).strip()]], columns=['raccordement'])
     raccordement_encoded = ohe_raccordement.transform(raccordement_df)
     raccordement_cols = [f'raccordement_{c}' for c in ohe_raccordement.categories_[0]]
 
