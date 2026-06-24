@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export function Selectdepartement() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
+
+  // On utilise une "ref" pour savoir où est le menu déroulant dans la page
+  const menuRef = useRef(null);
 
   const depts = [
     "Menu Item 1",
@@ -18,8 +21,19 @@ export function Selectdepartement() {
     setIsOpen(false);
   };
 
+  // Ferme le menu si on clique n'importe où en dehors de celui-ci
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative inline-block w-64 text-left">
+    <div ref={menuRef} className="relative inline-block w-64 text-left">
       {/* L'input qui sert de déclencheur */}
       <input
         type="text"

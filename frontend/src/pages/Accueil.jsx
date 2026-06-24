@@ -89,16 +89,6 @@ function Accueil() {
           <h3 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 italic">
             Bonne visite !
           </h3>
-
-          {/* Zone du tableau/rectangles en bas de votre feuille (ex: boutons d'action rapide) */}
-          <div className="max-w-xl mx-auto grid grid-cols-2 gap-4 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-            <button className="bg-white hover:bg-slate-50 text-indigo-600 font-semibold py-4 border-r border-slate-200 transition">
-              Explorer la Carte
-            </button>
-            <button className="bg-white hover:bg-slate-50 text-slate-600 font-semibold py-4 transition">
-              Simuler une Borne
-            </button>
-          </div>
         </div>
       </main>
     </div>
