@@ -43,7 +43,7 @@ docker compose down             # arrêter (garde les données)
 docker compose down -v          # arrêter + supprimer les données
 ```
 
-- API dispo sur `http://localhost:8000`
+- API dispo sur `http://localhost:8001`
 - MariaDB dispo sur `localhost:3307`
 - `database/*.sql` est importé automatiquement au premier démarrage du conteneur `db`
 - `docker compose down` pour arrêter, `docker compose down -v` pour repartir de zéro (supprime les données)
@@ -55,6 +55,6 @@ docker compose down -v          # arrêter + supprimer les données
 3. Télécharger le driver si demandé, puis **Test Connection**
 4. Les tables apparaissent dans l'arbre Database
 
-Le frontend (port Vite, ex: 5173) appelle le backend PHP (port 8000) en JSON
-via `axios`. Le backend appelle les scripts Python via `exec()`/`shell_exec()`
+Le frontend (port Vite, ex: 5173) appelle le backend PHP (port 8001) en JSON
+via `fetch`. Le backend appelle les scripts Python via `exec()`/`shell_exec()`
 pour les prédictions.

@@ -2,10 +2,11 @@ services:
   apache:
     build: ./backend
     ports:
-      - "8000:80"
+      - "8001:80"
     volumes:
       - ./backend:/var/www/html
       - ./frontend/dist:/var/www/html/app:ro
+      - ./ia:/var/www/html/ia:ro
     environment:
       DB_HOST: db
       DB_NAME: ${DB_NAME}

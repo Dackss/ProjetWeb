@@ -235,12 +235,12 @@ def insert_main_tables(connexion, lignes, caches):
 
     station_sql = (
         'INSERT INTO Station (id_station, nom_station, adresse, longitude, latitude, id_condition_acces, '
-        'horaires, reservation, date_service, code_postal, id_amenageur, id_operateur, code_insee, id_implantation) '
-        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        'horaires, date_service, code_postal, id_amenageur, id_operateur, code_insee, id_implantation) '
+        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
     )
     pdc_sql = (
         'INSERT INTO PointDeCharge (id_pdc, puissance, restriction_gabarit, deux_roues, cable_t2_attache, '
-        'id_station, id_raccordement, id_pmr, id_tarification) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        'reservation, id_station, id_raccordement, id_pmr, id_tarification) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
     )
     tarif_sql = (
         'INSERT INTO Tarification (id_type_tarif, prix_kwh_norm, prix_min_norm, gratuit, paiement_acte, '
@@ -264,7 +264,6 @@ def insert_main_tables(connexion, lignes, caches):
                 float(ligne['latitude']),
                 caches['condition_acces'][ligne['condition_acces']],
                 na(ligne['horaires']),
-                to_bool(ligne['reservation'], valeur_par_defaut=0),
                 na(ligne['date_service']),
                 ligne['code_postal'],
                 id_amenageur,
@@ -297,6 +296,7 @@ def insert_main_tables(connexion, lignes, caches):
             na(ligne['restriction_gabarit']),
             to_bool(ligne['deux_roues'], valeur_par_defaut=0),
             to_bool(ligne['cable_t2_attache'], valeur_par_defaut=None),
+            to_bool(ligne['reservation'], valeur_par_defaut=0),
             ligne['id_station'],
             id_raccordement,
             id_pmr,
