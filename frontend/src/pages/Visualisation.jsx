@@ -1,10 +1,17 @@
+import { Table } from "../components/layout/Table";
+import { MapBornes } from "../components/layout/Mapleaflet";
+import { ThemeProvider } from "@material-tailwind/react";
 function Visualisation() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Visualisation</h1>
-      <p>TODO: tableau des PDC + carte des stations</p>
+    <div class="text-center space-y-6">
+      <h2 className="text-2xl font-bold"> Borne de Charge </h2>
+      <ThemeProvider>
+        <Table />
+      </ThemeProvider>
+      <h2 className="text-2xl font-bold"> Carte des bornes de charge </h2>
+      <MapBornes />
     </div>
-  )
+  );
 }
 
-export default Visualisation
+export default Visualisation;
