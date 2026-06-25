@@ -5,25 +5,31 @@ import json
 import joblib
 
 """
-Contrat JSON (sys.argv[1]):
-  Requis : latitude (float), longitude (float)
-  Sortie : {"cluster": <int>}
+Contrat (sys.argv[1]) :
+  Requis : chemin d'un fichier JSON, liste de points [{"latitude": float, "longitude": float}, ...]
+    (un fichier et pas un argument inline comme les autres scripts : ici on traite
+    toutes les stations d'un coup, et le JSON est trop gros pour une ligne de commande)
+  Sortie : {"clusters": [<int>, ...]}, un cluster par point, même ordre
 """
 
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 
 
-def predire_cluster(payload):
+def predire_clusters(points):
     model = joblib.load(os.path.join(MODELS_DIR, 'kmeans_irve_model.pkl'))
-    latitude = float(payload['latitude'])
-    longitude = float(payload['longitude'])
-    cluster = model.predict([[latitude, longitude]])[0]
-    return int(cluster)
+    coords = [[float(p['latitude']), float(p['longitude'])] for p in points]
+    if not coords:
+        return []
+    return [int(c) for c in model.predict(coords)]
 
 
 def main():
-    payload = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
-    print(json.dumps({'cluster': predire_cluster(payload)}))
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], encoding='utf-8') as f:
+            payload = json.load(f)
+    else:
+        payload = []
+    print(json.dumps({'clusters': predire_clusters(payload)}))
 
 
 if __name__ == '__main__':
