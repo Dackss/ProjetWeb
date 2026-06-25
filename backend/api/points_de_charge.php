@@ -10,13 +10,16 @@ require_once __DIR__ . '/../config/database.php';
 const SELECT_PDC = "SELECT
         pdc.id_pdc, pdc.puissance, pdc.restriction_gabarit, pdc.deux_roues,
         pdc.cable_t2_attache, pdc.reservation,
-        s.id_station, s.nom_station, s.adresse,
+        s.id_station, s.nom_station, s.adresse, s.latitude, s.longitude,
         i.libelle AS implantation,
         ca.libelle AS condition_acces,
         c.nom_commune, d.code_departement, d.nom_departement,
         r.libelle AS raccordement,
         pmr.libelle AS accessibilite_pmr,
+        o.nom_operateur, o.enseigne,
+        nbp.nb_pdc,
         tt.libelle AS type_tarif, t.prix_kwh_norm, t.prix_min_norm, t.gratuit,
+        t.paiement_acte, t.paiement_cb, t.paiement_autre,
         GROUP_CONCAT(DISTINCT tp.libelle) AS types_prise
     FROM PointDeCharge pdc
     JOIN Station s ON s.id_station = pdc.id_station
@@ -24,12 +27,18 @@ const SELECT_PDC = "SELECT
     JOIN ConditionAcces ca ON ca.id_condition_acces = s.id_condition_acces
     JOIN Commune c ON c.code_insee = s.code_insee
     JOIN Departement d ON d.code_departement = c.code_departement
+    JOIN Operateur o ON o.id_operateur = s.id_operateur
     LEFT JOIN Raccordement r ON r.id_raccordement = pdc.id_raccordement
     LEFT JOIN AccessibilitePMR pmr ON pmr.id_pmr = pdc.id_pmr
     LEFT JOIN Tarification t ON t.id_tarification = pdc.id_tarification
     LEFT JOIN TypeTarif tt ON tt.id_type_tarif = t.id_type_tarif
     LEFT JOIN possede po ON po.id_pdc = pdc.id_pdc
-    LEFT JOIN TypePrise tp ON tp.id_type_prise = po.id_type_prise";
+    LEFT JOIN TypePrise tp ON tp.id_type_prise = po.id_type_prise
+    -- nb_pdc : nombre de points de charge sur la station. Sous-requête à part parce
+    -- que le GROUP BY pdc.id_pdc plus bas compte les pdc un par un, un COUNT(*) direct
+    -- donnerait toujours 1
+    LEFT JOIN (SELECT id_station, COUNT(*) AS nb_pdc FROM PointDeCharge GROUP BY id_station) nbp
+        ON nbp.id_station = s.id_station";
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':

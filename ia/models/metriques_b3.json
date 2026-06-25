@@ -1,0 +1,34 @@
+{
+  "Régression Logistique": {
+    "slug": "logreg",
+    "cv_score": 0.6873239436619719,
+    "accuracy_test": 0.6883060842882486,
+    "precision_macro": 0.6780519535693809,
+    "recall_macro": 0.5270166695272763,
+    "f1_macro": 0.5460589911960692
+  },
+  "Random Forest": {
+    "slug": "rf",
+    "cv_score": 0.9611747078213965,
+    "accuracy_test": 0.9706093877355324,
+    "precision_macro": 0.9649825581511315,
+    "recall_macro": 0.9609413228154373,
+    "f1_macro": 0.962935584152245
+  },
+  "Gradient Boosting": {
+    "slug": "gb",
+    "cv_score": 0.9075456997302966,
+    "accuracy_test": 0.9057870259385338,
+    "precision_macro": 0.9086710076495847,
+    "recall_macro": 0.8916646851764526,
+    "f1_macro": 0.8992016742410656
+  },
+  "K-Nearest Neighbors": {
+    "slug": "knn",
+    "cv_score": 0.9452202577165119,
+    "accuracy_test": 0.9563695641750971,
+    "precision_macro": 0.9453285932942311,
+    "recall_macro": 0.9466488163583209,
+    "f1_macro": 0.9459796462105968
+  }
+}

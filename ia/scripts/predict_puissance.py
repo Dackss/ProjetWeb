@@ -12,7 +12,16 @@ Contrat JSON (sys.argv[1]):
     prise_ef/reservation (bool, défaut false), condition_acces (str, défaut ""),
     type_tarif (str, défaut "inconnu", un de composite/gratuit/inconnu/kwh/temps),
     raccordement (str, défaut "inconnu"), operateur (str, défaut "")
-  Sortie : {"puissance": <str>}, un de Lente (<= 7.4 kW) / Normale (7.4 - 22 kW) /
+  Sortie : {
+    "puissance": <str>,              # prédiction du meilleur modèle (cv_score le plus haut)
+    "comparatif": [                  # un par algorithme entraîné (Besoin_Client_4), trié par cv_score desc
+      {"algorithme": <str>, "prediction": <str>, "cv_score_f1_macro": <float>,
+       "accuracy_test": <float>, "f1_macro_test": <float>, "f1_weighted_test": <float>,
+       "meilleur": <bool>},
+      ...
+    ]
+  }
+  Classes de puissance possibles : Lente (<= 7.4 kW) / Normale (7.4 - 22 kW) /
     Acceleree (22 - 50 kW) / Rapide (50 - 150 kW) / Ultra-rapide (> 150 kW)
 """
 
@@ -27,13 +36,13 @@ def to_bool_int(valeur):
 
 def predire_puissance(payload):
     scaler = joblib.load(os.path.join(MODELS_DIR, 'scaler_pretraitement_b4.pkl'))
-    modele = joblib.load(os.path.join(MODELS_DIR, 'modele_classification_b4.pkl'))
     ohe_implantation = joblib.load(os.path.join(MODELS_DIR, 'onehot_implantation_b4.pkl'))
     ohe_acces = joblib.load(os.path.join(MODELS_DIR, 'onehot_acces_b4.pkl'))
     ohe_tarif = joblib.load(os.path.join(MODELS_DIR, 'onehot_tarif_b4.pkl'))
     ohe_raccordement = joblib.load(os.path.join(MODELS_DIR, 'onehot_raccordement_b4.pkl'))
     enc_operateur = joblib.load(os.path.join(MODELS_DIR, 'encodage_operateur_b4.pkl'))
     features = joblib.load(os.path.join(MODELS_DIR, 'features_b4.pkl'))
+    metriques = json.load(open(os.path.join(MODELS_DIR, 'metriques_b4.json'), encoding='utf-8'))
 
     impl_df = pd.DataFrame([[str(payload.get('implantation', '')).strip()]], columns=['implantation'])
     impl_encoded = ohe_implantation.transform(impl_df)
@@ -81,14 +90,34 @@ def predire_puissance(payload):
     donnee_borne = pd.concat([bool_num, df_impl, df_acces, df_tarif, df_raccordement, df_operateur], axis=1)
     donnee_borne = donnee_borne.reindex(columns=features, fill_value=0)
 
+    # scaler pas refit par modèle : les 4 ont été entraînés sur le même X_train,
+    # donc même prétraitement pour tous, seul le classifieur change ensuite
     donnee_scaled = scaler.transform(donnee_borne.astype(float))
-    prediction = modele.predict(donnee_scaled)
-    return str(prediction[0])
+
+    # recharge les 4 modèles à chaque appel, comme predict_implantation.py
+    comparatif = []
+    for nom, info in metriques.items():
+        modele = joblib.load(os.path.join(MODELS_DIR, f"modele_{info['slug']}_b4.pkl"))
+        comparatif.append({
+            'algorithme': nom,
+            'prediction': str(modele.predict(donnee_scaled)[0]),
+            'cv_score_f1_macro': info['cv_score_f1_macro'],
+            'accuracy_test': info['accuracy_test'],
+            'f1_macro_test': info['f1_macro_test'],
+            'f1_weighted_test': info['f1_weighted_test'],
+        })
+
+    comparatif.sort(key=lambda r: r['cv_score_f1_macro'], reverse=True)
+    for i, resultat in enumerate(comparatif):
+        resultat['meilleur'] = (i == 0)
+
+    return comparatif[0]['prediction'], comparatif
 
 
 def main():
     payload = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
-    print(json.dumps({'puissance': predire_puissance(payload)}))
+    puissance, comparatif = predire_puissance(payload)
+    print(json.dumps({'puissance': puissance, 'comparatif': comparatif}))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,30 @@
+{
+  "Régression Logistique": {
+    "slug": "logreg",
+    "cv_score_f1_macro": 0.7207729037738447,
+    "accuracy_test": 0.766833411307446,
+    "f1_macro_test": 0.7239422505817538,
+    "f1_weighted_test": 0.7734651073330712
+  },
+  "Random Forest": {
+    "slug": "rf",
+    "cv_score_f1_macro": 0.8408592437229139,
+    "accuracy_test": 0.8745096627919531,
+    "f1_macro_test": 0.8438094946335257,
+    "f1_weighted_test": 0.8741096832103097
+  },
+  "KNN": {
+    "slug": "knn",
+    "cv_score_f1_macro": 0.8354291400377523,
+    "accuracy_test": 0.8697232518803757,
+    "f1_macro_test": 0.8396219950801346,
+    "f1_weighted_test": 0.8695690042814522
+  },
+  "Gradient Boosting": {
+    "slug": "gb",
+    "cv_score_f1_macro": 0.8358913686526543,
+    "accuracy_test": 0.8702270846079102,
+    "f1_macro_test": 0.8388614172673247,
+    "f1_weighted_test": 0.8695960475950656
+  }
+}
