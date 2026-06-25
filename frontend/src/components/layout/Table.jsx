@@ -3,9 +3,9 @@ import { getPointsDeCharge } from "../../services/api";
 
 const ROWS_PER_PAGE = 20;
 
-const COLONNES = ["N°", "Station", "Implantation", "Puissance", "Type de prise", "Accessibilité", "Tarif"];
+const COLONNES = ["", "N°", "Station", "Implantation", "Puissance", "Type de prise", "Accessibilité", "Tarif"];
 
-export function Table() {
+export function Table({ selectedPdcId = null, onSelectPdc = () => {} }) {
   const [tableRows, setTableRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -52,9 +52,9 @@ export function Table() {
       <table className="w-full table-auto text-left">
         <thead className="bg-gray-100 border-b border-gray-200">
           <tr>
-            {COLONNES.map(function (col) {
+            {COLONNES.map(function (col, i) {
               return (
-                <th key={col} className="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                <th key={i} className="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">
                   {col}
                 </th>
               );
@@ -75,8 +75,21 @@ export function Table() {
             let tarif = "Gratuit";
             if (row.prix_kwh_norm) tarif = row.prix_kwh_norm + " €/kWh";
 
+            let trClass = "border-b border-gray-100 transition-colors hover:bg-gray-50";
+            if (selectedPdcId === row.id_pdc) trClass = "border-b border-gray-100 transition-colors bg-blue-50 ring-1 ring-inset ring-blue-200";
+
             return (
-              <tr key={row.id_pdc} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
+              <tr key={row.id_pdc} className={trClass}>
+                <td className="px-4 py-2 text-sm text-center">
+                  <input
+                    type="radio"
+                    name="pdc-selection"
+                    aria-label={`Sélectionner le point de charge ${row.id_pdc}`}
+                    checked={selectedPdcId === row.id_pdc}
+                    onChange={() => onSelectPdc(row)}
+                    className="cursor-pointer accent-blue-600 w-4 h-4"
+                  />
+                </td>
                 <td className="px-4 py-2 text-sm text-gray-400">{row.id_station}</td>
                 <td className="px-4 py-2 text-sm font-medium text-gray-800">{row.nom_station}</td>
                 <td className="px-4 py-2 text-sm text-gray-600">{row.implantation}</td>
