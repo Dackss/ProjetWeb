@@ -31,7 +31,14 @@ function handle_cluster($script)
     require_once __DIR__ . '/../config/database.php';
     $pdo = get_db_connection();
 
-    $stations = $pdo->query('SELECT id_station, nom_station, latitude, longitude FROM Station')->fetchAll();
+    // longitude/latitude vivent sur PointDeCharge, pas Station : tous les PDC d'une
+    // même station ont les mêmes coordonnées, MIN() en prend une sans GROUP BY ailleurs
+    $stations = $pdo->query(
+        'SELECT s.id_station, s.nom_station, coords.latitude, coords.longitude
+         FROM Station s
+         JOIN (SELECT id_station, MIN(latitude) AS latitude, MIN(longitude) AS longitude
+             FROM PointDeCharge GROUP BY id_station) coords ON coords.id_station = s.id_station'
+    )->fetchAll();
 
     // array_map() : ne garde que latitude/longitude de chaque station, c'est
     // tout ce dont le script Python a besoin pour prédire un cluster

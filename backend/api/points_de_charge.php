@@ -8,9 +8,9 @@ require_once __DIR__ . '/../config/database.php';
 // son raccordement, son accessibilité PMR, et la liste de ses types de prise.
 // Partagée entre la liste paginée et la fiche d'un seul point de charge.
 const SELECT_PDC = "SELECT
-        pdc.id_pdc, pdc.puissance, pdc.restriction_gabarit, pdc.deux_roues,
-        pdc.cable_t2_attache, pdc.reservation,
-        s.id_station, s.nom_station, s.adresse, s.latitude, s.longitude,
+        pdc.id_pdc, pdc.puissance, pdc.longitude, pdc.latitude,
+        pdc.restriction_gabarit, pdc.deux_roues, pdc.cable_t2_attache, pdc.reservation,
+        s.id_station, s.nom_station, s.adresse,
         i.libelle AS implantation,
         ca.libelle AS condition_acces,
         c.nom_commune, d.code_departement, d.nom_departement,
