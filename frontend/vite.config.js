@@ -6,9 +6,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
-    // Cette ligne force TOUT le projet (et les bibliothèques) à utiliser le même React
     dedupe: ["react", "react-dom"],
   },
-    // prod build served by Apache under /app/ (see docker-compose.yml), dev server stays at root
+  server: {
+    watch: {
+      usePolling: true,
+    },
+  },
   base: command === 'build' ? '/app/' : '/',
 }));
