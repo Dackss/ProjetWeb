@@ -1,2 +1,1 @@
-ia/models/modele_classification_b3.pkl filter=lfs diff=lfs merge=lfs -text
-ia/models/modele_classification_b4.pkl filter=lfs diff=lfs merge=lfs -text
+ia/models/*.pkl filter=lfs diff=lfs merge=lfs -text

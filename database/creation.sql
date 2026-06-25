@@ -113,8 +113,6 @@ CREATE TABLE Station (
     id_station VARCHAR(50) NOT NULL,
     nom_station VARCHAR(150) NOT NULL,
     adresse VARCHAR(150) NOT NULL,
-    longitude DECIMAL(9,6) NOT NULL,
-    latitude DECIMAL(9,6) NOT NULL,
     id_condition_acces INT UNSIGNED NOT NULL,
     horaires VARCHAR(255),
     date_service DATE,
@@ -166,6 +164,8 @@ CREATE TABLE possede (
 CREATE TABLE PointDeCharge (
     id_pdc VARCHAR(50) NOT NULL,
     puissance DECIMAL(6,2) NOT NULL,
+    longitude DECIMAL(9,6) NOT NULL,
+    latitude DECIMAL(9,6) NOT NULL,
     restriction_gabarit VARCHAR(100),
     deux_roues TINYINT(1) NOT NULL DEFAULT False,
     cable_t2_attache TINYINT(1),

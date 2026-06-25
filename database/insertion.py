@@ -234,13 +234,14 @@ def insert_main_tables(connexion, lignes, caches):
     stations_inserees = set()
 
     station_sql = (
-        'INSERT INTO Station (id_station, nom_station, adresse, longitude, latitude, id_condition_acces, '
+        'INSERT INTO Station (id_station, nom_station, adresse, id_condition_acces, '
         'horaires, date_service, code_postal, id_amenageur, id_operateur, code_insee, id_implantation) '
-        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
     )
     pdc_sql = (
-        'INSERT INTO PointDeCharge (id_pdc, puissance, restriction_gabarit, deux_roues, cable_t2_attache, '
-        'reservation, id_station, id_raccordement, id_pmr, id_tarification) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        'INSERT INTO PointDeCharge (id_pdc, puissance, longitude, latitude, restriction_gabarit, deux_roues, '
+        'cable_t2_attache, reservation, id_station, id_raccordement, id_pmr, id_tarification) '
+        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
     )
     tarif_sql = (
         'INSERT INTO Tarification (id_type_tarif, prix_kwh_norm, prix_min_norm, gratuit, paiement_acte, '
@@ -260,8 +261,6 @@ def insert_main_tables(connexion, lignes, caches):
                 ligne['id_station'],
                 ligne['nom_station'],
                 ligne['adresse'],
-                float(ligne['longitude']),
-                float(ligne['latitude']),
                 caches['condition_acces'][ligne['condition_acces']],
                 na(ligne['horaires']),
                 na(ligne['date_service']),
@@ -293,6 +292,8 @@ def insert_main_tables(connexion, lignes, caches):
         curseur.execute(pdc_sql, (
             ligne['id_pdc'],
             float(ligne['puissance']),
+            float(ligne['longitude']),
+            float(ligne['latitude']),
             na(ligne['restriction_gabarit']),
             to_bool(ligne['deux_roues'], valeur_par_defaut=0),
             to_bool(ligne['cable_t2_attache'], valeur_par_defaut=None),
