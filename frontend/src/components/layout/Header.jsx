@@ -4,8 +4,6 @@ const links = [
   { to: '/', label: 'Accueil' },
   { to: '/visualisation', label: 'Visualisation' },
   { to: '/statistiques', label: 'Statistiques' },
-  { to: '/prediction-cluster', label: 'Prédiction Cluster' },
-  { to: '/prediction-pdc', label: 'Prédiction PDC' },
 ]
 
 function Header() {

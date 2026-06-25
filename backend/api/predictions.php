@@ -2,6 +2,16 @@
 
 require_once __DIR__ . '/../utils/response.php';
 
+// Preflight OPTIONS : le navigateur envoie cette requête avant le POST pour
+// vérifier les droits CORS. Il faut répondre 200 avec les headers, pas 400.
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+    http_response_code(200);
+    exit;
+}
+
 // Un type = un script Python dans ia/scripts/
 // implantation/puissance renvoient aussi un "comparatif" : un résultat par algo entraîné
 $scripts_par_type = [
