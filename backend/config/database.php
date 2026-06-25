@@ -1,22 +1,11 @@
 <?php
 
-function load_env($path)
-{
-    if (!file_exists($path)) {
-        return;
-    }
-    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) {
-            continue;
-        }
-        [$key, $value] = explode('=', $line, 2);
-        putenv(trim($key) . '=' . trim($value));
-    }
-}
+require_once __DIR__ . '/../utils/response.php';
 
-load_env(__DIR__ . '/.env');
-
-function get_db_connection(): PDO
+// Ouvre une connexion PDO vers MariaDB. Les identifiants viennent des variables
+// d'environnement injectées par docker-compose.yml, avec un fallback local
+// (utile si le script tourne un jour hors Docker).
+function get_db_connection()
 {
     $host = getenv('DB_HOST') ?: 'localhost';
     $dbname = getenv('DB_NAME') ?: 'irve';
@@ -25,14 +14,14 @@ function get_db_connection(): PDO
 
     try {
         $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
+        // ATTR_ERRMODE EXCEPTION : une requête en erreur lève une PDOException
+        // au lieu de juste renvoyer false silencieusement
+        // FETCH_ASSOC : les résultats arrivent en tableaux associatifs (colonne => valeur)
         return new PDO($dsn, $user, $password, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
     } catch (PDOException $e) {
-        http_response_code(500);
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Connexion base de données échouée', 'message' => $e->getMessage()]);
-        exit;
+        return json_response(['error' => 'Connexion base de données échouée', 'message' => $e->getMessage()], 500);
     }
 }
