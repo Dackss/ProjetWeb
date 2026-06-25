@@ -1,266 +1,133 @@
 import { useState, useEffect } from "react";
-import { Card, Typography } from "@material-tailwind/react";
-import { getStations } from "../../services/api";
+import { getPointsDeCharge } from "../../services/api";
 
-const TABLE_HEAD = [
-  "N°",
-  "Station",
-  "Implantation",
-  "Puissance",
-  "Type de prise",
-  "Accessibilité",
-  "Tarif",
-];
+const ROWS_PER_PAGE = 20;
 
-const ROWS_PER_PAGE = 5;
+const COLONNES = ["N°", "Station", "Implantation", "Puissance", "Type de prise", "Accessibilité", "Tarif"];
 
 export function Table() {
   const [tableRows, setTableRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [inputPage, setInputPage] = useState("1");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getStations();
-        if (response && response.data) {
-          setTableRows(response.data);
-        } else if (Array.isArray(response)) {
-          setTableRows(response);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération des stations :", error);
-      } finally {
+  useEffect(function () {
+    setLoading(true);
+    getPointsDeCharge({ page: currentPage, limit: ROWS_PER_PAGE })
+      .then(function (result) {
+        setTableRows(result.data);
+        setTotal(result.total);
+      })
+      .catch(function (err) {
+        console.error(err);
+      })
+      .finally(function () {
         setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
- // Calcule de la pagination
-  const totalPages = Math.ceil(tableRows.length / ROWS_PER_PAGE) || 1;
-  const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-  const endIndex = startIndex + ROWS_PER_PAGE;
-  const currentRows = tableRows.slice(startIndex, endIndex);
+      });
+  }, [currentPage]);
 
-  const goToPage = (page) => {
-    if (page < 1 || page > totalPages) return;
+  let totalPages = Math.ceil(total / ROWS_PER_PAGE);
+  if (totalPages < 1) totalPages = 1;
+
+  function goToPage(page) {
+    if (page < 1) return;
+    if (page > totalPages) return;
     setCurrentPage(page);
-  };
+    setInputPage(String(page));
+  }
 
-  // PAGINATION CONSTANTE 
-  const getPageNumbers = () => {
-    const pages = [];
-    if (totalPages <= 7) {
-      // S'il y a peu de pages, on les affiche toutes
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      // Si on est au début (pages 1 à 4)
-      if (currentPage <= 4) {
-        pages.push(1, 2, 3, 4, 5, "...", totalPages);
-      }
-      // Si on est à la fin (parmi les 4 dernières pages)
-      else if (currentPage >= totalPages - 3) {
-        pages.push(
-          1,
-          "...",
-          totalPages - 4,
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages,
-        );
-      }
-      // Si on est au milieu
-      else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages,
-        );
-      }
-    }
-    return pages;
-  };
+  function handleInputSubmit(e) {
+    e.preventDefault();
+    const page = parseInt(inputPage, 10);
+    if (!isNaN(page)) goToPage(page);
+  }
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-40">
-        <Typography className="text-gray-600 font-medium">
-          Chargement des stations...
-        </Typography>
-      </div>
-    );
+    return <div className="py-10 text-center text-gray-500">Chargement des points de charge...</div>;
   }
 
   return (
-    <section className="w-full bg-white">
-      <Card className="h-full w-full overflow-scroll border border-gray-300 px-6">
-        <table className="w-full min-w-max table-auto text-left">
-          <thead>
-            <tr>
-              {TABLE_HEAD.map((head) => (
-                <th key={head} className="border-b border-gray-300 pb-4 pt-10">
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="font-bold leading-none"
-                  >
-                    {head}
-                  </Typography>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentRows.map(
-              (
-                {
-                  id_pdc,
-                  id_station,
-                  nom_station,
-                  implantation,
-                  puissance,
-                  types_prise,
-                  accessibilite_pmr,
-                  prix_kwh_norm,
-                },
-                index,
-              ) => {
-                const isLast = index === currentRows.length - 1;
-                const classes = isLast
-                  ? "py-4"
-                  : "py-4 border-b border-gray-300";
-
-                return (
-                  <tr key={id_pdc} className="hover:bg-gray-50">
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-bold"
-                      >
-                        {id_station}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-gray-600"
-                      >
-                        {nom_station}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-gray-600"
-                      >
-                        {implantation}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-gray-600"
-                      >
-                        {puissance ? `${puissance} kW` : "-"}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-gray-600"
-                      >
-                        {types_prise || "Inconnu"}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-gray-600"
-                      >
-                        {accessibilite_pmr || "Non renseigné"}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-gray-600"
-                      >
-                        {prix_kwh_norm ? `${prix_kwh_norm} €/kWh` : "Gratuit"}
-                      </Typography>
-                    </td>
-                  </tr>
-                );
-              },
-            )}
-          </tbody>
-        </table>
-
-        {/* Barre de Pagination optimisée */}
-        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-300 py-4 gap-4">
-          <Typography
-            variant="small"
-            color="gray"
-            className="font-normal whitespace-nowrap"
-          >
-            Page <strong className="text-gray-900">{currentPage}</strong> sur{" "}
-            <strong className="text-gray-900">{totalPages}</strong>
-          </Typography>
-
-          <div className="flex items-center gap-2 flex-wrap justify-center">
-            {/* Bouton Précédent */}
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Précédent
-            </button>
-
-            {/* Liste dynamique des pages */}
-            {getPageNumbers().map((page, idx) => {
-              if (page === "...") {
-                return (
-                  <span
-                    key={`ellipsis-${idx}`}
-                    className="px-2 text-gray-400 font-bold select-none"
-                  >
-                    ...
-                  </span>
-                );
-              }
-
+    <div className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <table className="w-full table-auto text-left">
+        <thead className="bg-gray-100 border-b border-gray-200">
+          <tr>
+            {COLONNES.map(function (col) {
               return (
-                <button
-                  key={page}
-                  onClick={() => goToPage(page)}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                    page === currentPage
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "border border-gray-300 text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {page}
-                </button>
+                <th key={col} className="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  {col}
+                </th>
               );
             })}
+          </tr>
+        </thead>
+        <tbody>
+          {tableRows.map(function (row) {
+            let puissance = "-";
+            if (row.puissance) puissance = row.puissance + " kW";
 
-            {/* Bouton Suivant */}
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Suivant
+            let types_prise = "Inconnu";
+            if (row.types_prise) types_prise = row.types_prise;
+
+            let accessibilite = "Non renseigné";
+            if (row.accessibilite_pmr) accessibilite = row.accessibilite_pmr;
+
+            let tarif = "Gratuit";
+            if (row.prix_kwh_norm) tarif = row.prix_kwh_norm + " €/kWh";
+
+            return (
+              <tr key={row.id_pdc} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                <td className="px-4 py-2 text-sm text-gray-400">{row.id_station}</td>
+                <td className="px-4 py-2 text-sm font-medium text-gray-800">{row.nom_station}</td>
+                <td className="px-4 py-2 text-sm text-gray-600">{row.implantation}</td>
+                <td className="px-4 py-2 text-sm text-gray-600">{puissance}</td>
+                <td className="px-4 py-2 text-sm text-gray-600">{types_prise}</td>
+                <td className="px-4 py-2 text-sm text-gray-600">{accessibilite}</td>
+                <td className="px-4 py-2 text-sm text-gray-600">{tarif}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 bg-gray-50">
+        <span className="text-sm text-gray-500">
+          Page <strong className="text-gray-700">{currentPage}</strong> sur{" "}
+          <strong className="text-gray-700">{totalPages}</strong> — {total} résultats
+        </span>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={function () { goToPage(1); }} disabled={currentPage === 1}
+            className="px-2 py-1 rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+            «
+          </button>
+          <button onClick={function () { goToPage(currentPage - 1); }} disabled={currentPage === 1}
+            className="px-3 py-1 rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+            Précédent
+          </button>
+          <button onClick={function () { goToPage(currentPage + 1); }} disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+            Suivant
+          </button>
+          <button onClick={function () { goToPage(totalPages); }} disabled={currentPage === totalPages}
+            className="px-2 py-1 rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+            »
+          </button>
+
+          <form onSubmit={handleInputSubmit} className="flex items-center gap-1">
+            <label className="text-sm text-gray-500">Aller à</label>
+            <input
+              type="number" min="1" max={totalPages}
+              value={inputPage}
+              onChange={function (e) { setInputPage(e.target.value); }}
+              className="w-16 px-2 py-1 rounded border border-gray-300 text-sm text-center focus:outline-none focus:border-blue-500"
+            />
+            <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">
+              OK
             </button>
-          </div>
+          </form>
         </div>
-      </Card>
-    </section>
+      </div>
+    </div>
   );
 }

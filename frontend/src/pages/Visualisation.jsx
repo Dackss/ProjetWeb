@@ -3,13 +3,13 @@ import { MapBornes } from "../components/layout/Mapleaflet";
 import { ThemeProvider } from "@material-tailwind/react";
 function Visualisation() {
   return (
-    <div class="text-center space-y-6">
+    <div className="text-center space-y-6">
+      <h2 className="text-2xl font-bold"> Carte des stations de charge </h2>
+      <MapBornes />
       <h2 className="text-2xl font-bold"> Borne de Charge </h2>
       <ThemeProvider>
         <Table />
       </ThemeProvider>
-      <h2 className="text-2xl font-bold"> Carte des bornes de charge </h2>
-      <MapBornes />
     </div>
   );
 }

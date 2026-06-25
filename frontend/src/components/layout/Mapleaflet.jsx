@@ -1,73 +1,117 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import "leaflet.markercluster";
 import { getStations } from "../../services/api";
 
-const DEFAULT_CENTER = [48.8566, 2.3522];
-const DEFAULT_ZOOM = 13;
+function ClusteredMarkers({ stations }) {
+  const map = useMap();
 
-export function MapBornes() {
-  const [bornes, setBornes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  useEffect(function () {
+    const cluster = L.markerClusterGroup({ chunkedLoading: true });
 
-  useEffect(() => {
-    let isMounted = true;
+    for (const station of stations) {
+      const lat = parseFloat(station.latitude);
+      const lng = parseFloat(station.longitude);
 
-    async function fetchBornes() {
-      try {
-        const result = await getStations();
-        console.log("Résultat getStations:", result); 
-        const data = result?.data ?? (Array.isArray(result) ? result : []);
+      if (isNaN(lat)) continue;
+      if (isNaN(lng)) continue;
 
-        if (!Array.isArray(data)) {
-          throw new Error("Le format de données reçu n'est pas un tableau");
-        }
-
-        if (isMounted) {
-          setBornes(data);
-        }
-      } catch (err) {
-        console.error("Erreur fetchBornes:", err);
-        if (isMounted) setError(err);
-      } finally {
-        if (isMounted) setLoading(false);
+      let nom = station.nom_station;
+      if (nom === null || nom === undefined || nom === "") {
+        nom = "Station sans nom";
       }
+
+      let adresse = station.adresse;
+      if (adresse === null || adresse === undefined || adresse === "") {
+        adresse = "-";
+      }
+
+      let commune = station.nom_commune;
+      if (commune === null || commune === undefined || commune === "") {
+        commune = "-";
+      }
+
+      let implantation = station.implantation;
+      if (implantation === null || implantation === undefined || implantation === "") {
+        implantation = "-";
+      }
+
+      let acces = station.condition_acces;
+      if (acces === null || acces === undefined || acces === "") {
+        acces = "-";
+      }
+
+      let operateur = station.nom_operateur;
+      if (operateur === null || operateur === undefined || operateur === "") {
+        operateur = "-";
+      }
+
+      const popup =
+        "<div style='font-size:13px;line-height:1.6'>" +
+        "<strong>" + nom + "</strong><br/>" +
+        "<b>Adresse :</b> " + adresse + "<br/>" +
+        "<b>Commune :</b> " + commune + "<br/>" +
+        "<b>Implantation :</b> " + implantation + "<br/>" +
+        "<b>Accès :</b> " + acces + "<br/>" +
+        "<b>Opérateur :</b> " + operateur +
+        "</div>";
+
+      const marker = L.marker([lat, lng]);
+      marker.bindPopup(popup);
+      marker.addTo(cluster);
     }
 
-    fetchBornes();
-    return () => {
-      isMounted = false;
+    map.addLayer(cluster);
+
+    return function () {
+      map.removeLayer(cluster);
     };
+  }, [stations, map]);
+
+  return null;
+}
+
+export function MapBornes() {
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(function () {
+    getStations()
+      .then(function (result) {
+        setStations(result.data);
+      })
+      .catch(function (err) {
+        console.error(err);
+      })
+      .finally(function () {
+        setLoading(false);
+      });
   }, []);
 
-  if (loading)
-    return (
-      <div className="p-4 text-center text-gray-600 font-medium">
-        Chargement de la carte...
-      </div>
-    );
+  let markersComponent = null;
+  if (stations.length > 0) {
+    markersComponent = <ClusteredMarkers stations={stations} />;
+  }
 
-  if (error)
-    return (
-      <div className="p-4 text-center text-red-500 font-medium">
-        Erreur lors du chargement des bornes : {error.message}
+  let loadingOverlay = null;
+  if (loading) {
+    loadingOverlay = (
+      <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-[1000] pointer-events-none">
+        <span className="text-gray-600 font-medium">Chargement des stations...</span>
       </div>
     );
-
-  if (bornes.length === 0)
-    return (
-      <div className="p-4 text-center text-gray-500">
-        Aucune borne à afficher.
-      </div>
-    );
+  }
 
   return (
-    <div className="h-[500px] w-full overflow-hidden rounded-lg border border-gray-300">
+    <div className="h-[500px] w-full overflow-hidden rounded-lg border border-gray-300 relative">
+      {loadingOverlay}
       <MapContainer
-        center={DEFAULT_CENTER}
-        zoom={DEFAULT_ZOOM}
-        preferCanvas={true}
+        center={[46.603354, 1.888334]}
+        zoom={6}
         scrollWheelZoom={true}
         style={{ height: "100%", width: "100%" }}
       >
@@ -75,40 +119,7 @@ export function MapBornes() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
-        {bornes.map((borne, index) => {
-          const lat = parseFloat(borne.latitude);
-          const lng = parseFloat(borne.longitude);
-
-          if (isNaN(lat) || isNaN(lng)) return null;
-
-          const uniqueKey = borne.id_pdc || borne.id || `borne-marker-${index}`;
-
-          return (
-            <CircleMarker
-              key={uniqueKey}
-              center={[lat, lng]}
-              radius={4}
-              pathOptions={{
-                color: "#1e3a8a",
-                fillColor: "#3b82f6",
-                fillOpacity: 0.8,
-                weight: 1,
-              }}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <strong>{borne.nom_station || "Station sans nom"}</strong>
-                  <br />
-                  Puissance :{" "}
-                  {borne.puissance ? `${borne.puissance} kW` : "Inconnue"}
-                  <br />
-                  Horaire : {borne.horaires || "Non renseigné"}
-                </div>
-              </Popup>
-            </CircleMarker>
-          );
-        })}
+        {markersComponent}
       </MapContainer>
     </div>
   );

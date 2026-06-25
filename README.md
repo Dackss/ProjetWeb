@@ -21,7 +21,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Réponds sur http://localhost:5174
+Réponds sur http://localhost:5173
 
 ### Backend + base de données (Docker)
 

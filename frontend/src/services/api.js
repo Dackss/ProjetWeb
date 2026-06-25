@@ -7,7 +7,7 @@ const BASE_URL = 'http://localhost:8001/api'
 async function request(method, path, data) {
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: data ? { 'Content-Type': 'application/json' } : {},
     body: data ? JSON.stringify(data) : undefined,
   })
 
