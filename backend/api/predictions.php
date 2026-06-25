@@ -33,30 +33,46 @@ function handle_cluster($script)
 
     $stations = $pdo->query('SELECT id_station, nom_station, latitude, longitude FROM Station')->fetchAll();
 
+    // array_map() : ne garde que latitude/longitude de chaque station, c'est
+    // tout ce dont le script Python a besoin pour prédire un cluster
     $points = array_map(fn($s) => ['latitude' => $s['latitude'], 'longitude' => $s['longitude']], $stations);
 
     // 40k+ stations en JSON, ça dépasse la taille max d'un argument shell et exec()
     // plante (fork échoue). On écrit dans un fichier temp et on passe son chemin à la place.
+    // tempnam() : crée un fichier vide avec un nom unique et renvoie son chemin
     $fichier_temp = tempnam(sys_get_temp_dir(), 'cluster_');
+    // file_put_contents() : écrit le JSON dedans (équivalent d'un fopen+fwrite+fclose)
     file_put_contents($fichier_temp, json_encode($points));
 
-    $resultat = executer_script($script, $fichier_temp);
+    $resultat = executer_script_fichier($script, $fichier_temp);
+    // unlink() : supprime le fichier, on n'en a plus besoin une fois le script lancé
     unlink($fichier_temp);
 
     $clusters = $resultat['clusters'] ?? [];
 
     // recolle par index : $clusters[$i] correspond à $points[$i], donc à $stations[$i]
-    foreach ($stations as $i => &$station) {
-        $station['cluster'] = $clusters[$i] ?? null;
+    foreach ($stations as $i => $station) {
+        $stations[$i]['cluster'] = $clusters[$i] ?? null;
     }
 
     json_response(['data' => $stations]);
 }
 
-// $payload string = chemin de fichier déjà prêt (cluster), sinon des features qu'on encode en JSON
-function executer_script($script, $payload)
+function executer_script($script, $features)
 {
-    $argument = is_string($payload) ? $payload : json_encode($payload);
+    return lancer_python($script, json_encode($features));
+}
+
+function executer_script_fichier($script, $chemin_fichier)
+{
+    return lancer_python($script, $chemin_fichier);
+}
+
+// $argument est passé tel quel en ligne de commande au script Python
+function lancer_python($script, $argument)
+{
+    // escapeshellarg() : entoure de guillemets et échappe leur contenu, pour qu'on
+    // ne puisse pas injecter de commande shell via $script ou $argument
     $commande = 'python3 ' . escapeshellarg($script) . ' ' . escapeshellarg($argument);
 
     // exec() lance la commande, récupère sa sortie ligne par ligne dans $sortie
