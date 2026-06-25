@@ -1,143 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Typography } from "@material-tailwind/react";
+import { getStations } from "../../services/api";
 
 const TABLE_HEAD = [
   "N°",
-  "Puissance",
-  "Implantation",
   "Station",
+  "Implantation",
+  "Puissance",
   "Type de prise",
   "Accessibilité",
   "Tarif",
 ];
 
-// Après remplace ce tableau avec les données JSON de l'API
-const TABLE_ROWS = [
-  {
-    numero: 1,
-    puissance: "22 kW",
-    implantation: "Voirie",
-    station: "Place de la Mairie",
-    typePrise: "Type 2",
-    accessibilite: "24h/24",
-    tarif: "0,40 €/kWh",
-  },
-  {
-    numero: 2,
-    puissance: "50 kW",
-    implantation: "Parking",
-    station: "Centre Commercial Nord",
-    typePrise: "CCS",
-    accessibilite: "8h-22h",
-    tarif: "0,55 €/kWh",
-  },
-  {
-    numero: 3,
-    puissance: "150 kW",
-    implantation: "Station-service",
-    station: "Aire d'autoroute Sud",
-    typePrise: "CCS",
-    accessibilite: "24h/24",
-    tarif: "0,60 €/kWh",
-  },
-  {
-    numero: 4,
-    puissance: "7 kW",
-    implantation: "Voirie",
-    station: "Rue des Lilas",
-    typePrise: "Type 2",
-    accessibilite: "24h/24",
-    tarif: "0,30 €/kWh",
-  },
-  {
-    numero: 5,
-    puissance: "22 kW",
-    implantation: "Parking",
-    station: "Gare SNCF",
-    typePrise: "Type 2",
-    accessibilite: "6h-23h",
-    tarif: "0,42 €/kWh",
-  },
-  {
-    numero: 6,
-    puissance: "100 kW",
-    implantation: "Parking",
-    station: "Zone Industrielle Est",
-    typePrise: "CCS",
-    accessibilite: "24h/24",
-    tarif: "0,58 €/kWh",
-  },
-  {
-    numero: 7,
-    puissance: "50 kW",
-    implantation: "Voirie",
-    station: "Avenue Victor Hugo",
-    typePrise: "CHAdeMO",
-    accessibilite: "24h/24",
-    tarif: "0,52 €/kWh",
-  },
-  {
-    numero: 8,
-    puissance: "22 kW",
-    implantation: "Parking",
-    station: "Médiathèque",
-    typePrise: "Type 2",
-    accessibilite: "9h-19h",
-    tarif: "0,38 €/kWh",
-  },
-  {
-    numero: 9,
-    puissance: "150 kW",
-    implantation: "Station-service",
-    station: "Aire d'autoroute Nord",
-    typePrise: "CCS",
-    accessibilite: "24h/24",
-    tarif: "0,60 €/kWh",
-  },
-  {
-    numero: 10,
-    puissance: "11 kW",
-    implantation: "Voirie",
-    station: "Place du Marché",
-    typePrise: "Type 2",
-    accessibilite: "24h/24",
-    tarif: "0,35 €/kWh",
-  },
-  {
-    numero: 11,
-    puissance: "22 kW",
-    implantation: "Parking",
-    station: "Stade Municipal",
-    typePrise: "Type 2",
-    accessibilite: "7h-23h",
-    tarif: "0,40 €/kWh",
-  },
-  {
-    numero: 12,
-    puissance: "50 kW",
-    implantation: "Parking",
-    station: "Hôpital",
-    typePrise: "CCS",
-    accessibilite: "24h/24",
-    tarif: "0,55 €/kWh",
-  },
-];
-
-const ROWS_PER_PAGE = 8;
+const ROWS_PER_PAGE = 5;
 
 export function Table() {
+  const [tableRows, setTableRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const totalPages = Math.ceil(TABLE_ROWS.length / ROWS_PER_PAGE);
-
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getStations();
+        if (response && response.data) {
+          setTableRows(response.data);
+        } else if (Array.isArray(response)) {
+          setTableRows(response);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des stations :", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+ // Calcule de la pagination
+  const totalPages = Math.ceil(tableRows.length / ROWS_PER_PAGE) || 1;
   const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
   const endIndex = startIndex + ROWS_PER_PAGE;
-  const currentRows = TABLE_ROWS.slice(startIndex, endIndex);
+  const currentRows = tableRows.slice(startIndex, endIndex);
 
   const goToPage = (page) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
   };
+
+  // PAGINATION CONSTANTE 
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      // S'il y a peu de pages, on les affiche toutes
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      // Si on est au début (pages 1 à 4)
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      }
+      // Si on est à la fin (parmi les 4 dernières pages)
+      else if (currentPage >= totalPages - 3) {
+        pages.push(
+          1,
+          "...",
+          totalPages - 4,
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        );
+      }
+      // Si on est au milieu
+      else {
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages,
+        );
+      }
+    }
+    return pages;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Typography className="text-gray-600 font-medium">
+          Chargement des stations...
+        </Typography>
+      </div>
+    );
+  }
 
   return (
     <section className="w-full bg-white">
@@ -162,13 +119,14 @@ export function Table() {
             {currentRows.map(
               (
                 {
-                  numero,
-                  puissance,
+                  id_pdc,
+                  id_station,
+                  nom_station,
                   implantation,
-                  station,
-                  typePrise,
-                  accessibilite,
-                  tarif,
+                  puissance,
+                  types_prise,
+                  accessibilite_pmr,
+                  prix_kwh_norm,
                 },
                 index,
               ) => {
@@ -178,14 +136,14 @@ export function Table() {
                   : "py-4 border-b border-gray-300";
 
                 return (
-                  <tr key={numero} className="hover:bg-gray-50">
+                  <tr key={id_pdc} className="hover:bg-gray-50">
                     <td className={classes}>
                       <Typography
                         variant="small"
                         color="blue-gray"
                         className="font-bold"
                       >
-                        {numero}
+                        {id_station}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -193,7 +151,7 @@ export function Table() {
                         variant="small"
                         className="font-normal text-gray-600"
                       >
-                        {puissance}
+                        {nom_station}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -209,7 +167,7 @@ export function Table() {
                         variant="small"
                         className="font-normal text-gray-600"
                       >
-                        {station}
+                        {puissance ? `${puissance} kW` : "-"}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -217,7 +175,7 @@ export function Table() {
                         variant="small"
                         className="font-normal text-gray-600"
                       >
-                        {typePrise}
+                        {types_prise || "Inconnu"}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -225,7 +183,7 @@ export function Table() {
                         variant="small"
                         className="font-normal text-gray-600"
                       >
-                        {accessibilite}
+                        {accessibilite_pmr || "Non renseigné"}
                       </Typography>
                     </td>
                     <td className={classes}>
@@ -233,7 +191,7 @@ export function Table() {
                         variant="small"
                         className="font-normal text-gray-600"
                       >
-                        {tarif}
+                        {prix_kwh_norm ? `${prix_kwh_norm} €/kWh` : "Gratuit"}
                       </Typography>
                     </td>
                   </tr>
@@ -243,12 +201,19 @@ export function Table() {
           </tbody>
         </table>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between border-t border-gray-300 py-4">
-          <Typography variant="small" color="gray" className="font-normal">
-            Page {currentPage} sur {totalPages}
+        {/* Barre de Pagination optimisée */}
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-300 py-4 gap-4">
+          <Typography
+            variant="small"
+            color="gray"
+            className="font-normal whitespace-nowrap"
+          >
+            Page <strong className="text-gray-900">{currentPage}</strong> sur{" "}
+            <strong className="text-gray-900">{totalPages}</strong>
           </Typography>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            {/* Bouton Précédent */}
             <button
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
@@ -257,20 +222,35 @@ export function Table() {
               Précédent
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : "border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            {/* Liste dynamique des pages */}
+            {getPageNumbers().map((page, idx) => {
+              if (page === "...") {
+                return (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="px-2 text-gray-400 font-bold select-none"
+                  >
+                    ...
+                  </span>
+                );
+              }
 
+              return (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "border border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+
+            {/* Bouton Suivant */}
             <button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
