@@ -3,27 +3,38 @@ import Cardstat from "../components/layout/Card";
 import Select from "../components/layout/Select";
 import { getDepartements, getStatistiques } from "../services/api";
 
-/**
- * FONCTION UTILITAIRE : topAvecPct
- * Calcule l'élément majoritaire (le "top") d'une liste triée et son pourcentage par rapport au total.
- * @param {Array} liste - Exemple : [{ libelle: "Parking", nombre: 120 }, { libelle: "Voirie", nombre: 30 }]
- * @returns {string} - Exemple : "Parking (80%)"
- */
-function topAvecPct(liste) {
-  // Sécurité si la liste est vide ou indéfinie
-  if (!liste || liste.length === 0) return "—";
 
-  // Calcule la somme totale des bornes dans cette catégorie
-  const total = liste.reduce((sum, item) => sum + Number(item.nombre), 0);
+function BarresPourcentage({ titre, liste }) {
+  if (!liste || liste.length === 0) return null;
+  let total = 0;
+  for (const item of liste) {
+    total += Number(item.nombre);
+  }
 
-  // Récupère le premier élément (l'API renvoie normalement les données déjà triées du plus grand au plus petit)
-  const top = liste[0];
-
-  // Calcule le pourcentage arrondi à l'entier le plus proche
-  const pct = Math.round((Number(top.nombre) / total) * 100);
-
-  // Retourne la chaîne formatée
-  return `${top.libelle} (${pct}%)`;
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+      <h3 className="text-sm font-semibold text-slate-500  tracking-wide mb-4">{titre}</h3>
+      <div className="space-y-3">
+        {liste.map((item) => {
+          const pct = Math.round((Number(item.nombre) / total) * 100);
+          return (
+            <div key={item.libelle}>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-slate-700">{item.libelle}</span>
+                <span className="text-slate-500 font-medium">{pct}%</span>
+              </div>
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -87,10 +98,6 @@ function Statistiques() {
       ? (stats.nb_pdc / stats.nb_stations).toFixed(1) // Arrondi à 1 chiffre après la virgule
       : "—";
 
-  // Extraction des valeurs principales textuelles grâce à la fonction utilitaire du haut
-  const topImplantation = topAvecPct(stats?.repartition_implantation);
-  const topAcces = topAvecPct(stats?.repartition_condition_acces);
-
   // Recherche le nom complet du département sélectionné pour l'afficher en sous-titre
   const nomDept = departements.find(
     (d) => d.code_departement === selectedDept,
@@ -98,47 +105,35 @@ function Statistiques() {
 
   // RENDU DE L'INTERFACE
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
-      {/* En-tête de la page */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Statistiques</h1>
-        <p className="text-slate-500 mt-1">
-          Choisissez un département pour voir ses données.
-        </p>
+    <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <h1 className="text-3xl font-bold text-slate-900">Statistiques</h1>
+        <div className="w-full max-w-sm">
+          <Select
+            value={selectedDept}
+            onChange={handleChange}
+            options={options}
+            placeholder="Département..."
+          />
+        </div>
+        {loading && <p className="text-sm text-slate-400">Chargement...</p>}
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 
-      {/* Menu déroulant personnalisé */}
-      <Select
-        value={selectedDept}
-        onChange={handleChange}
-        options={options}
-        placeholder="Département..."
-      />
-
-      {/* Retours visuels de chargement ou d'erreur */}
-      {loading && <p className="text-slate-400">Chargement...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-
-      {/* Affichage des blocs statistiques uniquement si les données sont disponibles */}
       {stats && (
-        <div>
-          {/* Titre avec le nom du département sélectionné */}
-          <h2 className="text-lg font-semibold text-slate-700 mb-4">
-            {nomDept}
-          </h2>
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-slate-700">{nomDept}</h2>
 
-          {/* Grille responsive : 2 colonnes sur mobile, 3 sur écran moyen/large */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Cardstat head="Stations" texte={stats.nb_stations} />
             <Cardstat head="Points de charge" texte={stats.nb_pdc} />
-            {/* Si puissance_moyenne est null ou undefined, affiche "—" */}
-            <Cardstat
-              head="Puissance moy. (kW)"
-              texte={stats.puissance_moyenne ?? "—"}
-            />
-            <Cardstat head="Implantation principale" texte={topImplantation} />
-            <Cardstat head="Condition d'accès" texte={topAcces} />
+            <Cardstat head="Puissance moy. (kW)" texte={stats.puissance_moyenne ?? "—"} />
             <Cardstat head="PDC par station" texte={pdcParStation} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <BarresPourcentage titre="Implantations" liste={stats.repartition_implantation} />
+            <BarresPourcentage titre="Conditions d'accès" liste={stats.repartition_condition_acces} />
           </div>
         </div>
       )}

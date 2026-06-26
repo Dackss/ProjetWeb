@@ -8,15 +8,20 @@ const links = [
 
 function Header() {
   return (
-    <header className="bg-slate-900 text-white">
-      <nav className="flex items-center gap-6 px-6 py-4">
-        <img
-          src="../../../public/logo.png"
-          alt="logo du site"
-          class="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105"
-        />
-        <ul className="flex gap-4">
-          {/* Creation des différantes option de navigation */}
+    <header className="bg-slate-900 text-white border-b border-slate-800">
+      <nav className="flex items-center px-6 py-2 relative">
+        <NavLink to="/" className="flex items-center gap-2">
+          <div className="bg-slate-800 rounded-xl px-2 py-1">
+            <img
+              src="../../../public/logo.png"
+              alt="logo du site"
+              className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-105 drop-shadow-[0_0_6px_rgba(148,163,184,0.3)]"
+            />
+          </div>
+          <span className="font-semibold text-white tracking-wide">MaBorne</span>
+        </NavLink>
+
+        <ul className="absolute left-1/2 -translate-x-1/2 flex gap-6">
           {links.map((link) => (
             <li key={link.to}>
               <NavLink

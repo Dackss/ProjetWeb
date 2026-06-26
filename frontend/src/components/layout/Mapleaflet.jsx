@@ -22,98 +22,50 @@ import { getStations } from "../../services/api";
  * Ce composant ne retourne rien visuellement (null) mais agit directement sur l'instance de la carte.
  */
 function ClusteredMarkers({ stations }) {
-  // Récupération de l'instance de la carte Leaflet parente
   const map = useMap();
 
   useEffect(
     function () {
-      // Création du groupe de clusters avec chargement par morceaux (chunkedLoading) pour ne pas figer l'écran
       const groupe = L.markerClusterGroup({ chunkedLoading: true });
-
-      // Calcule correct les niveaux de zoom lors de l'ajout des marqueurs.
       map.addLayer(groupe);
 
-      // Boucle sur l'ensemble des stations pour créer les marqueurs individuels
+      const markers = [];
       for (const station of stations) {
-        // Conversion des coordonnées en nombres flottants
         const lat = parseFloat(station.latitude);
         const lng = parseFloat(station.longitude);
+        if (isNaN(lat) || isNaN(lng)) continue;
 
-        // Sécurité : Si les coordonnées sont invalides, on passe à la station suivante
-        if (isNaN(lat)) continue;
-        if (isNaN(lng)) continue;
+        const nom = station.nom_station || "Station sans nom";
+        const adresse = station.adresse || "-";
+        const commune = station.nom_commune || "-";
+        const implantation = station.implantation || "-";
+        const acces = station.condition_acces || "-";
+        const operateur = station.nom_operateur || "-";
 
-        // --- NETTOYAGE ET VALIDATION DES DONNÉES (Valeurs par défaut si chaînes vides ou nulles) ---
-        let nom = station.nom_station;
-        if (nom === null || nom === undefined || nom === "") {
-          nom = "Station sans nom";
-        }
-
-        let adresse = station.adresse;
-        if (adresse === null || adresse === undefined || adresse === "") {
-          adresse = "-";
-        }
-
-        let commune = station.nom_commune;
-        if (commune === null || commune === undefined || commune === "") {
-          commune = "-";
-        }
-
-        let implantation = station.implantation;
-        if (
-          implantation === null ||
-          implantation === undefined ||
-          implantation === ""
-        ) {
-          implantation = "-";
-        }
-
-        let acces = station.condition_acces;
-        if (acces === null || acces === undefined || acces === "") {
-          acces = "-";
-        }
-
-        let operateur = station.nom_operateur;
-        if (operateur === null || operateur === undefined || operateur === "") {
-          operateur = "-";
-        }
-
-        // Construction de la structure HTML de la popup de description
         const popup =
           "<div style='font-size:13px;line-height:1.6'>" +
-          "<strong>" +
-          nom +
-          "</strong><br/>" +
-          "<b>Adresse :</b> " +
-          adresse +
-          "<br/>" +
-          "<b>Commune :</b> " +
-          commune +
-          "<br/>" +
-          "<b>Implantation :</b> " +
-          implantation +
-          "<br/>" +
-          "<b>Accès :</b> " +
-          acces +
-          "<br/>" +
-          "<b>Opérateur :</b> " +
-          operateur +
+          "<strong>" + nom + "</strong><br/>" +
+          "<b>Adresse :</b> " + adresse + "<br/>" +
+          "<b>Commune :</b> " + commune + "<br/>" +
+          "<b>Implantation :</b> " + implantation + "<br/>" +
+          "<b>Accès :</b> " + acces + "<br/>" +
+          "<b>Opérateur :</b> " + operateur +
           "</div>";
 
-        // Création du marqueur Leaflet, liaison de la popup et ajout au groupe de clusters
         const marker = L.marker([lat, lng]);
         marker.bindPopup(popup);
-        groupe.addLayer(marker);
+        markers.push(marker);
       }
 
-      // Fonction de nettoyage (cleanup) : exécutée si les stations changent ou si le composant est démonté.
-      // Elle retire proprement le groupe de clusters de la carte pour éviter les fuites de mémoire.
+      // addLayers (batch) au lieu de addLayer dans une boucle — laisse markercluster gérer le chunking
+      groupe.addLayers(markers);
+
       return function () {
         map.removeLayer(groupe);
       };
     },
     [stations, map],
-  ); // Dépendances de l'effet : se déclenche à chaque modification de la liste ou de la carte
+  );
 
   return null;
 }
@@ -125,19 +77,20 @@ export function MapBornes() {
   const [stations, setStations] = useState([]); // Stockage des données des stations
   const [loading, setLoading] = useState(true); // État de chargement de l'API
 
-  // Hook d'effet pour charger les données de l'API au montage initial du composant
   useEffect(function () {
+    let mounted = true;
     getStations()
       .then(function (result) {
-        setStations(result.data); // Mise à jour de l'état avec les données reçues
+        if (mounted) setStations(result.data);
       })
       .catch(function (err) {
-        console.error(err); // Log des erreurs éventuelles
+        if (mounted) console.error(err);
       })
       .finally(function () {
-        setLoading(false); // Arrêt de l'indicateur de chargement, quoi qu'il arrive
+        if (mounted) setLoading(false);
       });
-  }, []); // Tableau de dépendances vide = s'exécute une seule fois au chargement
+    return function () { mounted = false; };
+  }, []);
 
   // Gestion de l'affichage conditionnel du composant de clustering
   let markersComponent = null;
