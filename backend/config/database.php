@@ -9,7 +9,7 @@ function get_db_connection()
 {
     $host = getenv('DB_HOST') ?: 'localhost';
     $dbname = getenv('DB_NAME') ?: 'irve';
-    $user = getenv('DB_USER') ?: 'root';
+    $user = getenv('DB_USER') ?: 'irve';
     $password = getenv('DB_PASSWORD') ?: '';
 
     try {

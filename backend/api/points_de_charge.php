@@ -41,6 +41,9 @@ const SELECT_PDC = "SELECT
         ON nbp.id_station = s.id_station";
 
 switch ($_SERVER['REQUEST_METHOD']) {
+    case 'OPTIONS':
+        json_response([], 200);
+        break;
     case 'GET':
         handle_get();
         break;

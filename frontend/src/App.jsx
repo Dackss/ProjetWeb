@@ -4,7 +4,7 @@ import Accueil from './pages/Accueil'
 import Visualisation from './pages/Visualisation'
 import Statistiques from './pages/Statistiques'
 import PredictionCluster from './pages/PredictionCluster'
-import PredictionPDC from './pages/PredictionPDC'
+import PredictionPdc from './pages/PredictionPdc'
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
         <Route path="/visualisation" element={<Visualisation />} />
         <Route path="/statistiques" element={<Statistiques />} />
         <Route path="/prediction-cluster" element={<PredictionCluster />} />
-        <Route path="/prediction-pdc" element={<PredictionPDC />} />
+        <Route path="/prediction-pdc" element={<PredictionPdc />} />
       </Route>
     </Routes>
   )
