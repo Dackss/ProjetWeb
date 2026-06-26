@@ -13,7 +13,7 @@ function Header() {
         <NavLink to="/" className="flex items-center gap-2">
           <div className="bg-slate-800 rounded-xl px-2 py-1">
             <img
-              src="../../../public/logo.png"
+              src="/logo.png"
               alt="logo du site"
               className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-105 drop-shadow-[0_0_6px_rgba(148,163,184,0.3)]"
             />
