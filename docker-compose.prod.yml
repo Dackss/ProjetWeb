@@ -1,0 +1,4 @@
+services:
+  apache:
+    ports:
+      - "80:80"

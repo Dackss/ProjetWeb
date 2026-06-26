@@ -1,4 +1,4 @@
-const BASE_URL = '/api'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 // Appelle l'API et renvoie le JSON. Lève une erreur (avec le message du
 // backend si dispo) si la réponse HTTP n'est pas un succès, pour que les

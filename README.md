@@ -48,6 +48,38 @@ docker compose down -v          # arrêter + supprimer les données
 - `database/*.sql` est importé automatiquement au premier démarrage du conteneur `db`
 - `docker compose down` pour arrêter, `docker compose down -v` pour repartir de zéro (supprime les données)
 
+### Déploiement en production (serveur)
+
+**Prérequis** : Docker installé (`curl -fsSL https://get.docker.com | sh` ou `wget -qO- https://get.docker.com | sh`).
+
+```bash
+git clone https://github.com/Dackss/ProjetWeb.git
+cd ProjetWeb
+
+# Créer le fichier .env
+cp .env.example .env
+# éditer .env avec les identifiants DB
+
+# Builder le frontend
+docker run --rm -v $(pwd)/frontend:/app -w /app node:22-alpine sh -c "npm install && npm run build"
+
+# Lancer (port 80)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d apache db
+
+# Insérer les données
+docker compose run --rm python
+```
+
+App dispo sur `http://<IP_SERVEUR>/`.
+
+**Mise à jour du serveur :**
+
+```bash
+git pull
+docker run --rm -v $(pwd)/frontend:/app -w /app node:22-alpine sh -c "npm install && npm run build"
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build apache
+```
+
 ### Voir les tables MariaDB dans WebStorm
 
 1. Database tool window → `+` → Data Source → **MariaDB**
