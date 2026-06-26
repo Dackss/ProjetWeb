@@ -6,14 +6,14 @@ function Accueil() {
         {/* Image de fond simulée par un dégradé moderne si aucune image n'est chargée */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700 opacity-90 mix-blend-multiply"></div>
         <img
-          src="https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80"
+          src="../../public/pexels-smart-me-ag-2155714756-34800675.jpg"
           alt="Bannière bornes de recharge"
           className="w-full h-full object-cover"
         />
         {/* Texte centré sur l'image */}
         <div className="absolute inset-0 flex items-center justify-center text-center p-4">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-md">
-            {"Chargeprochedevous"}
+            {"LaBonneBorne"}
           </h1>
         </div>
       </header>
@@ -32,7 +32,7 @@ function Accueil() {
           {/* Boite Image à Gauche */}
           <div className="w-full md:w-1/2 h-64 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden transform hover:scale-[1.02] transition duration-300 flex items-center justify-center text-slate-400">
             <img
-              src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80"
+              src="../../public/pexels-introspectivedsgn-4048104.jpg"
               alt="Carte de France"
               className="w-full h-full object-cover"
             />
@@ -58,7 +58,7 @@ function Accueil() {
           {/* Boite Image (Droite) */}
           <div className="w-full md:w-1/2 h-64 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden transform hover:scale-[1.02] transition duration-300 flex items-center justify-center text-slate-400">
             <img
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80"
+              src="../../public/pexels-pavel-danilyuk-7654579.jpg"
               alt="Caractéristiques techniques"
               className="w-full h-full object-cover"
             />
@@ -70,7 +70,7 @@ function Accueil() {
           {/* Boite Image à Gauche) */}
           <div className="w-full md:w-1/2 h-64 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden transform hover:scale-[1.02] transition duration-300 flex items-center justify-center text-slate-400">
             <img
-              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"
+              src="../../public/pexels-rdne-7948038.jpg"
               alt="Prédiction IA et clusters"
               className="w-full h-full object-cover"
             />
