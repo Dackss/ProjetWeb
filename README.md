@@ -64,20 +64,21 @@ cp .env.example .env
 docker run --rm -v $(pwd)/frontend:/app -w /app node:22-alpine sh -c "npm install && npm run build"
 
 # Lancer (port 80)
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d apache db
+docker compose -f docker-compose.prod.yml up -d apache db
 
 # Insérer les données
-docker compose run --rm python
+docker compose -f docker-compose.prod.yml run --rm python
 ```
 
-App dispo sur `http://<IP_SERVEUR>/`.
+App dispo sur `http://10.30.51.41/`.
 
 **Mise à jour du serveur :**
 
 ```bash
 git pull
+git lfs pull
 docker run --rm -v $(pwd)/frontend:/app -w /app node:22-alpine sh -c "npm install && npm run build"
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build apache
+docker compose -f docker-compose.prod.yml up -d --build apache
 ```
 
 ### Voir les tables MariaDB dans WebStorm
@@ -87,6 +88,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build ap
 3. Télécharger le driver si demandé, puis **Test Connection**
 4. Les tables apparaissent dans l'arbre Database
 
-Le frontend (port Vite, ex: 5173) appelle le backend PHP (port 8001) en JSON
-via `fetch`. Le backend appelle les scripts Python via `exec()`/`shell_exec()`
-pour les prédictions.
+**Architecture :**
+- Dev : frontend Vite (`localhost:5173`) → appel direct `http://localhost:8001/api` (via `VITE_API_URL` dans `.env.development`)
+- Prod : frontend + backend servis par Apache sur `http://10.30.51.41/`, API sur `/api/`
+- Backend appelle scripts Python via `exec()`/`shell_exec()` pour les prédictions

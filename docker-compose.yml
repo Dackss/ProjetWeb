@@ -1,6 +1,6 @@
 services:
   apache:
-    build: ./backend
+    build: .
     ports:
       - "8001:80"
     volumes:
