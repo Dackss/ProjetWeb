@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   plugins: [react(), tailwindcss()],
   resolve: {
     dedupe: ["react", "react-dom"],
@@ -13,5 +13,5 @@ export default defineConfig(({ command }) => ({
       usePolling: true,
     },
   },
-  base: command === 'build' ? '/app/' : '/',
+  base: '/',
 }));

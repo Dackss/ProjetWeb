@@ -1,0 +1,12 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_URI} ^/index\.php
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+RewriteRule ^ /dist/index.html [L]
